@@ -56,10 +56,26 @@ public class MemorySpace {
 	 * @param length
 	 *        the length (in words) of the memory block that has to be allocated
 	 * @return the base address of the allocated block, or -1 if unable to allocate
-	 */
-	public int malloc(int length) {		
-		//// Replace the following statement with your code
+	 */	
+		public int malloc(int length)
+		{		
+			ListIterator iter1 = freeList.iterator();
+		    while (iter1.hasNext())
+			{
+			    MemoryBlock block = iter1.next();
+			    if (block.length >= length)
+			    {
+				   MemoryBlock newBlock = new MemoryBlock(block.baseAddress, length);
+				   allocatedList.addLast(newBlock);	
+				   block.baseAddress += length;
+				   block.length -= length;
+				   if(block.length == 0)
+					 freeList.remove(block);
+				return newBlock.baseAddress;
+			}
+		}
 		return -1;
+		
 	}
 
 	/**
@@ -71,7 +87,18 @@ public class MemorySpace {
 	 *            the starting address of the block to freeList
 	 */
 	public void free(int address) {
-		//// Write your code here
+		if (allocatedList.getSize() == 0){
+			throw new IllegalArgumentException("index must be between 0 and size");
+		}
+		ListIterator iter1 = allocatedList.iterator();
+		while (iter1.hasNext()) {
+			MemoryBlock nblock = iter1.next();
+			if (nblock.baseAddress == address) {
+				freeList.addLast(nblock);
+				allocatedList.remove(nblock);
+				return;
+			}
+		}
 	}
 	
 	/**
@@ -79,7 +106,15 @@ public class MemorySpace {
 	 * for debugging purposes.
 	 */
 	public String toString() {
-		return freeList.toString() + "\n" + allocatedList.toString();		
+		if (freeList.toString() == "") 
+		{
+			return "\n" + allocatedList.toString() + " ";	
+		} else
+		if (allocatedList.toString() == "")
+		{
+			return freeList.toString() + " \n";	
+		}
+		return freeList.toString() + " " + "\n" + allocatedList.toString() + " ";			
 	}
 	
 	/**
@@ -88,7 +123,43 @@ public class MemorySpace {
 	 * In this implementation Malloc does not call defrag.
 	 */
 	public void defrag() {
-		/// TODO: Implement defrag test
-		//// Write your code here
+		LinkedList sorted = new LinkedList();
+		ListIterator iter1 = freeList.iterator();
+		while (iter1.hasNext())
+		{
+			MemoryBlock block = iter1.next();
+			boolean added = false;
+			ListIterator sortedIter = sorted.iterator();
+			while (sortedIter.hasNext())
+			{
+				MemoryBlock sortedBlock = sortedIter.next();
+				if (block.baseAddress < sortedBlock.baseAddress) 
+				{
+					sorted.add(sorted.indexOf(sortedBlock), block);
+					added = true;
+					break;
+				}
+			}
+			if (!added)
+			{
+				sorted.addLast(block);
+			}
+		}
+		iter1 = sorted.iterator();
+		LinkedList merged = new LinkedList();
+		while (iter1.hasNext()) {
+			MemoryBlock block = iter1.next();
+			if (merged.getSize() == 0) {
+				merged.addFirst(block);
+			} else {
+				MemoryBlock last = merged.getBlock(merged.getSize() - 1);
+				if (last.baseAddress + last.length == block.baseAddress) {
+					last.length += block.length;
+					freeList.remove(block);
+				} else {
+					merged.addLast(block);
+				}
+			}
+	}
 	}
 }
