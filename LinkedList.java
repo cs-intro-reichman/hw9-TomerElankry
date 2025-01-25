@@ -288,12 +288,26 @@ public class LinkedList {
 			if (size == 1) last = first;
 			return;
 		}
-		while (current.next != null && !current.next.block.equals(block)) current = current.next;
-		if (current.next == null) throw new IllegalArgumentException("The given memory block is not in this list");
-		if (current.next == last) last = current;  
-		current.next = current.next.next;  
-
-		size--;
+		for(int i = 0 ; i < size ; i ++) {
+			if(current.next.block == block && block == last.block) {
+				current.next = null;
+				size --;
+				last = current;
+				if (size == 1) {
+					last = first;
+				}
+				return;
+			}
+			if (current.next.block == block) {
+				current.next = current.next.next;
+				size --;
+				if(size == 1) {
+					last = first;
+				}
+				return;
+			}
+			current = current.next;
+		}
 	}
 
 	/**
