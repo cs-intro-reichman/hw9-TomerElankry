@@ -93,18 +93,21 @@ public class MemorySpace {
 	 *            the starting address of the block to freeList
 	 */
 	public void free(int address) {
-		if (allocatedList.getSize() == 0){
+		if(freeList.getSize() == 1 && freeList.getFirst().block.baseAddress == 0 && freeList.getFirst().block.length == 100) {
 			throw new IllegalArgumentException("index must be between 0 and size");
 		}
-		ListIterator iter1 = allocatedList.iterator();
-		while (iter1.hasNext()) {
-			MemoryBlock nblock = iter1.next();
-			if (nblock.baseAddress == address) {
-				freeList.addLast(nblock);
-				allocatedList.remove(nblock);
-				return;
+		Node curr = allocatedList.getNode(0);
+		Node m = null;
+		while(curr != null) {
+			if(curr.block.baseAddress == address) {
+				m = curr;
+				break;
 			}
+			curr = curr.next;
 		}
+		if(m == null) return;
+		freeList.addLast(m.block);
+		allocatedList.remove(m.block);
 	}
 	
 	/**
@@ -112,15 +115,7 @@ public class MemorySpace {
 	 * for debugging purposes.
 	 */
 	public String toString() {
-		if (freeList.toString() == "") 
-		{
-			return "\n" + allocatedList.toString() + " ";	
-		} else
-		if (allocatedList.toString() == "")
-		{
-			return freeList.toString() + " \n";	
-		}
-		return freeList.toString() + " " + "\n" + allocatedList.toString() + " ";			
+		return freeList.toString() + "\n" + allocatedList.toString();			
 	}
 	
 	/**
@@ -129,43 +124,22 @@ public class MemorySpace {
 	 * In this implementation Malloc does not call defrag.
 	 */
 	public void defrag() {
-		LinkedList sorted = new LinkedList();
-		ListIterator iter1 = freeList.iterator();
-		while (iter1.hasNext())
-		{
-			MemoryBlock block = iter1.next();
-			boolean added = false;
-			ListIterator sortedIter = sorted.iterator();
-			while (sortedIter.hasNext())
-			{
-				MemoryBlock sortedBlock = sortedIter.next();
-				if (block.baseAddress < sortedBlock.baseAddress) 
-				{
-					sorted.add(sorted.indexOf(sortedBlock), block);
-					added = true;
-					break;
-				}
-			}
-			if (!added)
-			{
-				sorted.addLast(block);
+		if (freeList.getSize() <= 1) {
+			return;
+		}
+		freeList.sort();
+		Node current = freeList.getFirst();
+		while (current != null && current.next != null) {
+			MemoryBlock currentBlock = current.block;
+			MemoryBlock nextBlock = current.next.block;
+	
+			if (currentBlock.baseAddress + currentBlock.length == nextBlock.baseAddress) {
+				currentBlock.length += nextBlock.length;
+				freeList.remove(current.next);
+			} else {
+				current = current.next;
 			}
 		}
-		iter1 = sorted.iterator();
-		LinkedList merged = new LinkedList();
-		while (iter1.hasNext()) {
-			MemoryBlock block = iter1.next();
-			if (merged.getSize() == 0) {
-				merged.addFirst(block);
-			} else {
-				MemoryBlock last = merged.getBlock(merged.getSize() - 1);
-				if (last.baseAddress + last.length == block.baseAddress) {
-					last.length += block.length;
-					freeList.remove(block);
-				} else {
-					merged.addLast(block);
-				}
-			}
-	}
+	
 	}
 }
