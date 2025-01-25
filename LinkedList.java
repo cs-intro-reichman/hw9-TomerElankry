@@ -268,7 +268,7 @@ public class LinkedList {
 	 */
 	public void remove(MemoryBlock block) {
 		if (block == null) {
-			throw new IllegalArgumentException("Block cannot be null");
+			throw new IllegalArgumentException("index must be between 0 and size");
 		}
 	
 		if (first == null) {
