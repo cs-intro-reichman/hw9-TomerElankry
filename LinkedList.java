@@ -234,6 +234,9 @@ public class LinkedList {
 		if(index==0){
 			first = first.next;
 			size--;
+			if (first == null) {
+				last = null;
+			}
 			return;
 		}
 		if(index==size-1) 
@@ -272,7 +275,7 @@ public class LinkedList {
 		}
 	
 		if (first == null) {
-			throw new IllegalArgumentException("The given memory block is not in this list");
+			throw new IllegalArgumentException("index must be between 0 and size");
 		}
 	
 		if (first.block.equals(block)) {
