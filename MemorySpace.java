@@ -56,32 +56,27 @@ public class MemorySpace {
 	 * @param length
 	 *        the length (in words) of the memory block that has to be allocated
 	 * @return the base address of the allocated block, or -1 if unable to allocate
-	 */	
-		public int malloc(int length)
-		{		
-			Node curr= freeList.getFirst();
-		    Node mBlock = null;
-		    while(curr != null) 
-			{
-			    if(curr.block.length >= length) 
-			    {
-				  mBlock = curr;
-				  break;
-			    }
-			    curr=curr.next;
-		    }
-		    if(mBlock != null) 
-			{
-			   MemoryBlock newBlock = new MemoryBlock(mBlock.block.baseAddress , length);
-			   allocatedList.addLast(newBlock);
-			   int address = mBlock.block.baseAddress;
-			   mBlock.block.length -= length;
-			   mBlock.block.baseAddress += length;
-			if(mBlock.block.length == 0) freeList.remove(mBlock);
+	 */
+	public int malloc(int length) {		
+		Node temp = freeList.getFirst();
+		Node matchedBlock = null;
+		while(temp != null) {
+			if(temp.block.length >= length) {
+				matchedBlock = temp;
+				break;
+			}
+			temp=temp.next;
+		}
+		if(matchedBlock != null) {
+			MemoryBlock newBlock = new MemoryBlock(matchedBlock.block.baseAddress , length);
+			allocatedList.addLast(newBlock);
+			int address = matchedBlock.block.baseAddress;
+			matchedBlock.block.length -= length;
+			matchedBlock.block.baseAddress += length;
+			if(matchedBlock.block.length == 0) freeList.remove(matchedBlock);
 			return address;
 		}
 		return -1;	
-		
 	}
 
 	/**
@@ -96,18 +91,18 @@ public class MemorySpace {
 		if(freeList.getSize() == 1 && freeList.getFirst().block.baseAddress == 0 && freeList.getFirst().block.length == 100) {
 			throw new IllegalArgumentException("index must be between 0 and size");
 		}
-		Node curr = allocatedList.getNode(0);
-		Node m = null;
-		while(curr != null) {
-			if(curr.block.baseAddress == address) {
-				m = curr;
+		Node temp = allocatedList.getNode(0);
+		Node match = null;
+		while(temp != null) {
+			if(temp.block.baseAddress == address) {
+				match = temp;
 				break;
 			}
-			curr = curr.next;
+			temp = temp.next;
 		}
-		if(m == null) return;
-		freeList.addLast(m.block);
-		allocatedList.remove(m.block);
+		if(match == null) return;
+		freeList.addLast(match.block);
+		allocatedList.remove(match.block);
 	}
 	
 	/**
@@ -115,7 +110,7 @@ public class MemorySpace {
 	 * for debugging purposes.
 	 */
 	public String toString() {
-		return freeList.toString() + "\n" + allocatedList.toString();			
+		return freeList.toString() + "\n" + allocatedList.toString();		
 	}
 	
 	/**
@@ -140,6 +135,5 @@ public class MemorySpace {
 				current = current.next;
 			}
 		}
-	
 	}
 }
